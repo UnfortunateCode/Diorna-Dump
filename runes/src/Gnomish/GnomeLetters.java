@@ -96,7 +96,50 @@ public class GnomeLetters {
 		
 		// Orient the bottom layer, if it has multiple max rotations, then use the second layer, finally use the top 
 		// layer. If two orientations have all the layers with the same value, then they are identical.
+		long bottomMax, midMax, topMax;
+		long bottomValue, midValue, topValue;
 		
+		int[][][] max;
+		
+		max = copyOf(oriented);
+		bottomMax = TicTacLetters.getValue(oriented[0]);
+		midMax = TicTacLetters.getValue(oriented[1]);
+		topMax = TicTacLetters.getValue(oriented[2]);
+		
+		boolean updateNeeded;
+		
+		for (int j = 0; j < 2; ++j) {
+			for (int i = 0; i < 3+j; ++i) {
+				updateNeeded = false;
+				
+				oriented = leftForward(oriented); 
+				bottomValue = TicTacLetters.getValue(oriented[0]);
+				midValue = TicTacLetters.getValue(oriented[1]);
+				topValue = TicTacLetters.getValue(oriented[2]);
+
+				if (bottomValue > bottomMax) {
+					updateNeeded = true;
+				} else if (bottomValue == bottomMax) {
+					if (midValue > midMax) {
+						updateNeeded = true;
+					} else if (midValue == midMax) {
+						if (topValue > topMax) {
+							updateNeeded = true;
+						}
+					}
+				}
+				
+				if (updateNeeded) {
+					max = copyOf(oriented);
+					bottomMax = TicTacLetters.getValue(oriented[0]);
+					midMax = TicTacLetters.getValue(oriented[1]);
+					topMax = TicTacLetters.getValue(oriented[2]);
+				}
+			}
+			if (j == 0) {
+				oriented = leftToRight(oriented);
+			}
+		}
 		
 		return oriented;
 	}
@@ -158,7 +201,7 @@ public class GnomeLetters {
 		
 		
 		if (orders[0] == 5) { // Bottom
-			oriented =  oriented;
+			// Leave as is.
 		} else if (orders[1] == 5) { // Left
 			oriented =  frontDown(leftForward(oriented));
 		} else if (orders[2] == 5) { // Front
