@@ -88,10 +88,9 @@ public class GnomeLetters {
 		return copy;
 	}
 
-	public static int[][][] maxRotation(int[][][] rune) throws ArithmeticException, IllegalArgumentException, IndexOutOfBoundsException {
+	
+	public static int[][][] maxRotation(int[][][] rune) throws ArithmeticException, IllegalArgumentException {
 		int[][][] oriented = orient(rune); // Source of all the exceptions
-		
-			
 		
 		
 		// Orient the bottom layer, if it has multiple max rotations, then use the second layer, finally use the top 
@@ -141,35 +140,36 @@ public class GnomeLetters {
 			}
 		}
 		
-		return oriented;
+		return max;
 	}
 
 	/**
 	 * Ensure that only one outer face has 5 points set to 1 (rotated to bottom), and the others have 4,
 	 * the orientation with 5 points has a 4 point center, with the others having 5 points.
 	 * 
-	 * Note: all of these may be reversed, in which case all of the 1s and 0s need to be swapped.
+	 * Note: all of these may be reversed, in which case all of the 1s and 0s will be swapped.
 	 * 
 	 * @param rune the 3*3*3 cube filled with only 1s and 0s
-	 * @return
-	 * @throws ArithmeticException
+	 * @return the 5 point face in the i=0 plane
+	 * @throws ArithmeticException if planes are not configured correctly
+	 * @throws IllegalArgumentException if sub-arrays are not consistently sized
 	 */
-	public static int[][][] orient(int[][][] rune) throws ArithmeticException, IllegalArgumentException, IndexOutOfBoundsException {
+	public static int[][][] orient(int[][][] rune) throws ArithmeticException, IllegalArgumentException {
 		int[][][] oriented = new int[3][3][3];
-		for (int i = 0; i < 3; ++i) {
-			for (int j = 0; j < 3; ++j) {
-				for (int k = 0; k < 3; ++k) {
-					oriented[i][j][k] = rune[i][j][k];
-				}
-			}
-		}
-		
 		int[][][] planes;
 		
 		try {
+			for (int i = 0; i < 3; ++i) {
+				for (int j = 0; j < 3; ++j) {
+					for (int k = 0; k < 3; ++k) {
+						oriented[i][j][k] = rune[i][j][k];
+					}
+				}
+			}
+		
 			planes = getPlanes(oriented);
 		} catch (IndexOutOfBoundsException e) {
-			throw new IllegalArgumentException("Parameter was not a filled out:\n" + print3Array(rune));
+			throw new IllegalArgumentException("Parameter was not a 3x3x3 array:\n" + print3Array(rune));
 		} 
 		// planes will have the faces [Bottom, BtT, Top, Front, FtB, Back, Left, LtR, Right]
 		
@@ -363,9 +363,90 @@ public class GnomeLetters {
 		
 		return s;
 	}
+	
+	
 	public static void main(String[] args) {
-
-
+		int[] bottom, mid, top;
+		
+		GnomeLetters.Permutation bottomPerm, midPerm, tooPerm;
+		
+		bottomPerm = GnomeLetters.new Permutation(9,5);
+		midPerm = 
+		
+		
+	}
+	
+	private class Permutation {
+		int[] next;
+		boolean hasNext;
+		int choose;
+		
+		public Permutation (int size, int choose) {
+			if (choose > size) {
+				hasNext = false;
+				this.choose = -1;
+			} else {
+				next = new int[size];
+				
+				for (int i = 0; i < choose; ++i) {
+					next[size - 1 - i] = 1;
+				}
+				hasNext = false;
+				this.choose = choose;
+			}
+		}
+		
+		public boolean hasNext() {
+			return hasNext;
+		}
+		
+		public int[] next() throws IndexOutOfBoundsException {
+			if (!hasNext) {
+				throw new IndexOutOfBoundsException("Over permuted");
+			}
+			
+			int[] cur = next.clone();
+			
+			boolean firstOne = false;
+			int numOne = 0;
+			
+			for (int i = next.length - 1; i >= 0; --i) {
+				if (next[i] == 1) {
+					firstOne = true;
+					++numOne;
+				} else if (firstOne) {
+					next[i] = 1;
+					next[i+1] = 0;
+					
+					for (i += 2; i < next.length - numOne; ++i) {
+						next[i] = 0;
+					}
+					for (; i < next.length; ++i) {
+						next[i] = 1;
+					}
+					
+					hasNext = true;
+					return cur;
+				}
+				
+			}
+			
+			hasNext = false;
+			return cur;
+		}
+		
+		public void reset() {
+			if (choose >= 0) {
+				int i;
+				for (i = 0; i < next.length - choose; ++i) {
+					next[i] = 0;
+				}
+				for (; i < next.length; ++i) {
+					next[i] = 1;
+				}
+				hasNext = true;
+			}
+		}
 	}
 
 }
